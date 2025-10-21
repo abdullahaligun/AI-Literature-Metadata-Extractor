@@ -1,0 +1,507 @@
+{
+  "name": "AI-Literature-Metadata-Extractor",
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "",
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        624,
+        16
+      ],
+      "id": "cbfba097-48e1-4e54-a85a-38c6d0396d19",
+      "name": "Download file",
+      "credentials": {
+        "googleApi": {
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "={{ $('Download file').item.binary.data }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        16
+      ],
+      "id": "c35e9b33-aaa1-4b3b-af9c-f0bf38320549",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        416,
+        0
+      ],
+      "id": "c1d8815d-1094-4838-b34b-95e46c1237cd",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me",
+      "typeVersion": 1,
+      "position": [
+        2176,
+        16
+      ],
+      "id": "8bbabc79-23b4-41a2-9d8d-fb4ce42d7bc9"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "18Ai6qOIsSaSTBPKE6FMQ99rUYw-tInM0aio58UUlqmI",
+          "mode": "list",
+          "cachedResultName": "LITERATUR OZETI",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "OZET",
+          "cachedResultUrl": ""
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "YAZARLAR": "={{\n  (\n    Array.isArray($json.metadata?.['dc:creator'])\n      ? $json.metadata['dc:creator'].join(', ')\n      : ($json.metadata?.['dc:creator'] || '')\n  )\n  ||\n  (\n    Array.isArray($('Code in JavaScript').item.json.extracted.yazarlar)\n      ? $('Code in JavaScript').item.json.extracted.yazarlar.join(', ')\n      : ($('Code in JavaScript').item.json.extracted.yazarlar || '')\n  )\n}}\n",
+            "MAKALE ADI": "={{ $json.metadata['dc:title']  || $('Code in JavaScript').item.json.extracted.makale_adi}}\n",
+            "TIP": "={{ $('Code in JavaScript').item.json.extracted.kaynak.tip || $json.metadata['prism:aggregationtype'] }}",
+            "TIP ADI": "={{\n  (\n    $('Code in JavaScript').item.json.extracted.kaynak\n      ? [\n          $('Code in JavaScript').item.json.extracted.kaynak.ad || '',\n          $('Code in JavaScript').item.json.extracted.kaynak.cilt || '',\n          $('Code in JavaScript').item.json.extracted.kaynak.sayi || '',\n          $('Code in JavaScript').item.json.extracted.kaynak.sayfa || '',\n          $('Code in JavaScript').item.json.extracted.kaynak.ek_bilgi || ''\n        ]\n        .filter(Boolean)\n        .join(' - ')\n      : ''\n  )\n  ||\n  (\n    $json.metadata && $json.metadata['dc:description']\n      ? $json.metadata['dc:description']\n      : ''\n  )\n}}\n",
+            "ANAHTAR KELİMELER": "={{\n  (\n    Array.isArray($json.metadata && $json.metadata['pdf:keywords'])\n      ? $json.metadata['pdf:keywords'].join(', ')\n      : ($json.metadata && $json.metadata['pdf:keywords']\n          ? $json.metadata['pdf:keywords']\n          : '')\n  )\n  ||\n  (\n    Array.isArray($('Code in JavaScript').item.json.extracted.anahtar_kelimeler)\n      ? $('Code in JavaScript').item.json.extracted.anahtar_kelimeler.join(', ')\n      : ($('Code in JavaScript').item.json.extracted.anahtar_kelimeler || '')\n  )\n}}\n",
+            "ID": "={{ $('Loop Over Items').item.json.id }}\n",
+            "AY/YIL": "={{\n  (\n    $('Code in JavaScript').item.json.extracted\n    && $('Code in JavaScript').item.json.extracted.yayin\n    && $('Code in JavaScript').item.json.extracted.yayin.ay\n    && $('Code in JavaScript').item.json.extracted.yayin.yil\n    && $('Code in JavaScript').item.json.extracted.yayin.ay !== 'belirsiz'\n    && $('Code in JavaScript').item.json.extracted.yayin.yil !== 'belirsiz'\n  )\n  ? (\n      $('Code in JavaScript').item.json.extracted.yayin.ay\n      + '/' +\n      $('Code in JavaScript').item.json.extracted.yayin.yil\n    )\n  : (\n      $json.metadata && $json.metadata['prism:coverdisplaydate']\n        ? $json.metadata['prism:coverdisplaydate']\n        : ''\n    )\n}}\n",
+            "KAYNAK": "={{ $json.metadata['prism:url'] ||  $('Code in JavaScript').item.json.citationMetadata?.citationSources[0].uri || $('Code in JavaScript').item.json.extracted?.doi }}",
+            "ARAŞTIRMA SORUSU": "={{ $('Code in JavaScript').item.json.extracted.arastirma_sorusu }}",
+            "BULGU VE SONUC": "={{ $('Code in JavaScript').item.json.extracted.bulgular_sonuclar }}",
+            "YONTEM": "={{ $('Code in JavaScript').item.json.extracted.yontem }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "KAYNAK",
+              "displayName": "KAYNAK",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "MAKALE ADI",
+              "displayName": "MAKALE ADI",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "YAZARLAR",
+              "displayName": "YAZARLAR",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "AY/YIL",
+              "displayName": "AY/YIL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "TIP",
+              "displayName": "TIP",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "TIP ADI",
+              "displayName": "TIP ADI",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ANAHTAR KELİMELER",
+              "displayName": "ANAHTAR KELİMELER",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ARAŞTIRMA SORUSU",
+              "displayName": "ARAŞTIRMA SORUSU",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "YONTEM",
+              "displayName": "YONTEM",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "BULGU VE SONUC",
+              "displayName": "BULGU VE SONUC",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1376,
+        16
+      ],
+      "id": "1880bdbf-d59e-4b0e-9822-3bbd5271ccab",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleApi": {
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "document",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "{\n  \"contents\": [{\n    \"role\": \"user\",\n    \"parts\": [{\n      \"text\": \"Aşağıdaki makale metninden SADECE belirtilen JSON şemasına uygun veri çıkar. Girdi döküman hangi dilde olursa olsun açıklamalarını türkçe yazmalısın. Tahmin yapacaksan da açıkça 'belirsiz' yaz.\\n\\nÇIKTI ŞEMASI (TAM VE GEÇERLİ JSON):\\n{\\n  \\\"makale_adi\\\": \\\"\\\",\\n  \\\"yazarlar\\\": [\\\"\\\"],\\n  \\\"yayin\\\": {\\n    \\\"ay\\\": \\\"\\\",\\n    \\\"yil\\\": 0\\n  },\\n  \\\"kaynak\\\": {\\n    \\\"tip\\\": \\\"Dergi|Konferans|Kitap|ArXiv|Diğer\\\",\\n    \\\"ad\\\": \\\"\\\",\\n    \\\"cilt\\\": \\\"\\\",\\n    \\\"sayi\\\": \\\"\\\",\\n    \\\"sayfa\\\": \\\"\\\",\\n    \\\"ek_bilgi\\\": \\\"\\\"\\n  },\\n  \\\"anahtar_kelimeler\\\": [\\\"\\\"],\\n  \\\"arastirma_sorusu\\\": \\\"\\\",\\n  \\\"yontem\\\": \\\"\\\",\\n  \\\"bulgular_sonuclar\\\": \\\"\\\",\\n  \\\"doi\\\": \\\"\\\"\\n}\\n\\nKURALLAR:\\n- Sadece yukarıdaki anahtarları kullan.\\n- Değer bulamazsan boş string veya 0 bırak.\\n- Yazarları [\\\"Ad Soyad\\\", ...] dizisi olarak ver.\\n- Ay Türkçe olabilir (Ocak, Şubat, ...). Yıl tamsayı.\\n- Kaynak tipini bu kümeden seç: Dergi|Konferans|Kitap|ArXiv|Diğer.\\n- Örnek kaynak formatı yol gösterici: Dergi - \\\"Computers and Electronics in Agriculture, Volume 217, February 2024, 108629\\\"; bu bilgileri uygun alanlara dağıt.\\n\\nMETİN:\\n{{inputText}}\"\n    }]\n  }]\n}\n",
+        "inputType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        832,
+        16
+      ],
+      "id": "167400fb-3558-45a8-b119-68b1283cbd2a",
+      "name": "Analyze document",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "gAZ70EXLDmCRWdZo",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Gemini cevabından JSON'u çekip item.json.extracted içine koyar.\n// Aşağıdaki şekilleri destekler:\n// - Google API: { candidates[0].content.parts[0].text }\n// - Senin örnek: { content.parts[0].text } veya [ { content.parts[0].text } ]\n// - Düz string ya da body/text alanına düşmüş içerik\n\nfunction pickText(obj) {\n  if (!obj) return '';\n  if (typeof obj === 'string') return obj;\n\n  // Google API standard\n  if (obj.candidates?.[0]?.content?.parts?.[0]?.text) {\n    return obj.candidates[0].content.parts[0].text;\n  }\n\n  // Senin örnek payload'ı tek obje\n  if (obj.content?.parts?.[0]?.text) {\n    return obj.content.parts[0].text;\n  }\n\n  // HTTP node bazı kurulumlarda body/text altına koyabiliyor\n  if (obj.body) return pickText(obj.body);\n  if (obj.text) return obj.text;\n\n  // Tüm yanıt komple bir dizi geldiyse (nadir)\n  if (Array.isArray(obj)) {\n    if (obj[0]?.content?.parts?.[0]?.text) {\n      return obj[0].content.parts[0].text;\n    }\n    // Dizide Google-style varsa\n    if (obj[0]?.candidates?.[0]?.content?.parts?.[0]?.text) {\n      return obj[0].candidates[0].content.parts[0].text;\n    }\n  }\n\n  return '';\n}\n\nfunction safeParse(jsonStr) {\n  try { return JSON.parse(jsonStr); } catch { return null; }\n}\n\nconst out = $input.all().map((item) => {\n  const src = item.json ?? item;\n\n  // Metni topla\n  let text = $input.first().json.content.parts[0].text\n\n  // ```json çitlerini temizle\n  let candidate = (text || '').replace(/```json|```/g, '').trim();\n\n  // Önce direkt parse\n  let parsed = safeParse(candidate);\n\n  // Olmazsa ilk {...} bloğunu ayıkla\n  if (!parsed) {\n    const m = candidate.match(/\\{[\\s\\S]*\\}/);\n    if (m) parsed = safeParse(m[0]);\n  }\n\n  if (!parsed || typeof parsed !== 'object') {\n    parsed = {};\n  }\n\n  item.json.extracted = parsed;\n  return item;\n});\n\nreturn out;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        16
+      ],
+      "id": "8a566468-e90d-46c4-9a48-7fb235dfa47f",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Loop Over Items').item.json.id }}"
+        },
+        "newUpdatedFileName": "={{ $json['AY/YIL'] }}-{{ $json['MAKALE ADI'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1584,
+        16
+      ],
+      "id": "7685f7e7-b0f7-4b9d-9070-26ce968bfbba",
+      "name": "Update file",
+      "credentials": {
+        "googleApi": {
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "move",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Loop Over Items').item.json.id }}",
+          "mode": "id"
+        },
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "18_xEz1mortacfC7mptU7WQDADrxEFvqH",
+          "mode": "list",
+          "cachedResultName": "",
+          "cachedResultUrl": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1792,
+        16
+      ],
+      "id": "51bf64fd-b156-466e-b766-2ab3a6de5578",
+      "name": "Move file",
+      "credentials": {
+        "googleApi": {
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        0
+      ],
+      "id": "0dcf5096-8343-4c56-96d0-7df668e8991d",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "resource": "fileFolder",
+        "searchMethod": "query",
+        "queryString": "'10hY1UHMPud6IxQdVmmFruiPRS4EOpvAu' in parents and mimeType = 'application/pdf' and trashed = false",
+        "filter": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        176,
+        0
+      ],
+      "id": "e009ec2a-434d-4a3e-a264-1e04efeeabeb",
+      "name": "Search files and folders",
+      "credentials": {
+        "googleApi": {
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Analyze document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze document": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Update file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update file": {
+      "main": [
+        [
+          {
+            "node": "Move file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Move file": {
+      "main": [
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Search files and folders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search files and folders": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timeSavedPerExecution": 10
+  },
+  "versionId": "bb741cac-31d4-4719-b5ec-921d8c98e277",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "94ba4063aa2c77b3892c2be0e000a33aafa835e9ff14f0f589687062945f6c28"
+  },
+  "id": "GROCxnrQzpOZ1HHI",
+  "tags": []
+}
